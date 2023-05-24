@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Building Data</title>
 </head>
+
 <body>
     <h1>Building Data</h1>
     <table id="building-table">
@@ -14,23 +16,41 @@
     </table>
 
     <script>
+        function processJSON(data, parentElement) {
+            if (Array.isArray(data)) {
+                data.forEach(item => {
+                    processJSON(item, parentElement);
+                });
+            } else if (typeof data === 'object') {
+                for (let key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        const value = data[key];
+                        const row = document.createElement('tr');
+                        const keyCell = document.createElement('td');
+                        const valueCell = document.createElement('td');
+                        keyCell.textContent = key;
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        parentElement.appendChild(row);
+
+                        processJSON(value, valueCell);
+                    }
+                }
+            } else {
+                parentElement.textContent = data;
+            }
+        }
+
         fetch('building_data.json')
             .then(response => response.json())
             .then(data => {
-                const table = document.getElementById('building-table');
-                data.forEach(item => {
-                    const row = document.createElement('tr');
-                    const idCell = document.createElement('td');
-                    const nameCell = document.createElement('td');
-                    idCell.textContent = item.id;
-                    nameCell.textContent = item.name;
-                    row.appendChild(idCell);
-                    row.appendChild(nameCell);
-                    // Add more cells as needed
-                    table.appendChild(row);
-                });
+                const table = document.createElement('table');
+                processJSON(data, table);
+                document.body.appendChild(table);
             })
             .catch(error => console.error('Error:', error));
+
     </script>
 </body>
+
 </html>
